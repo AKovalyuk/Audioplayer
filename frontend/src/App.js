@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import * as React from 'react';
 import './App.css';
 import SkipPreviousRoundedIcon from '@mui/icons-material/SkipPreviousRounded';
@@ -6,50 +5,95 @@ import SkipNextRoundedIcon from '@mui/icons-material/SkipNextRounded';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import LinearProgress from '@mui/material/LinearProgress';
 import PauseRoundedIcon from '@mui/icons-material/PauseRounded';
-import Slider from '@mui/material/Slider';
-import LibraryMusicIcon from '@mui/icons-material/LibraryMusic';
-import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
-import SkipNextIcon from '@mui/icons-material/SkipNext';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ListSubheader from '@mui/material/ListSubheader';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Collapse from '@mui/material/Collapse';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import DraftsIcon from '@mui/icons-material/Drafts';
-import SendIcon from '@mui/icons-material/Send';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
-import StarBorder from '@mui/icons-material/StarBorder';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import ControlPointIcon from '@mui/icons-material/ControlPoint';
 import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { Box } from '@mui/system';
 import { Container } from '@mui/material';
 
-function range(n){
-  let arr = Array(n);
-  for(let i = 0; i < n; i++){
-    arr[i] = i;
-  }
+function AddCompositionButton(props){
+  return (
+    <IconButton onClick={() => {props.onClick(props.index)}}>
+      <AddRoundedIcon/>
+    </IconButton>
+  )
 }
 
+function DeletePlaylist(props){
+  return (
+    <IconButton onClick={() => {props.onClick(props.index)}}>
+      <DeleteIcon/>
+    </IconButton>
+  )
+}
+
+function PlayComposition(props){
+  return (
+    <IconButton onClick={() => {props.onClick(props.index, props.compIndex)}}>
+      <PlayArrowRoundedIcon/>
+    </IconButton>
+  )
+}
+
+function PushBack(props){
+  return (
+    <IconButton onClick={() => {props.onClick(props.index, props.compIndex)}}>
+      <ExpandMore/>
+    </IconButton>
+  )
+}
+
+function PushForward(props){
+  return (
+    <IconButton onClick={() => {props.onClick(props.index, props.compIndex)}}>
+      <ExpandLess/>
+    </IconButton>
+  )
+}
+
+function RemoveComposition(props){
+  return (
+    <IconButton onClick={() => {props.onClick(props.index, props.compIndex)}}>
+      <DeleteIcon/>
+    </IconButton>
+  )
+}
+
+function AddMusicListButton(props){
+  return (
+    <ListItem>
+      <ListItemButton onClick={() => {
+          props.dialogCallback(props.index);
+        }}>
+        {props.name}
+      </ListItemButton>
+    </ListItem>
+  )
+}
 
 class PlayListList extends React.Component{
   constructor(props){
     super(props);
     this.worksWith = -1;
     this.state = {playlists: [], currentPlaylist: -1, dialogOpened: false, music: []};
+    this.addComposition = this.addComposition.bind(this);
+    this.deletePlaylist = this.deletePlaylist.bind(this);
+    this.playComposition = this.playComposition.bind(this);
+    this.pushBack = this.pushBack.bind(this);
+    this.pushForward = this.pushForward.bind(this);
+    this.removeComposition = this.removeComposition.bind(this);
+    this.openDialog = this.openDialog.bind(this);
+    this.dialogCallback = this.dialogCallback.bind(this);
   }
 
   setData(data){
@@ -85,6 +129,80 @@ class PlayListList extends React.Component{
     });
   }
 
+  addComposition(index){
+    this.worksWith = index;
+    this.setState({
+      ...this.state,
+      dialogOpened: true
+    });
+  }
+
+  deletePlaylist(index){
+    fetch('/remove_playlist', {
+      method: 'POST',
+      cache: 'no-cache',
+      body: JSON.stringify({index: index})
+    }).then((response) => response.json()).then((data) => {
+      this.setData(data);
+      this.props.updater();
+    });
+  }
+
+  playComposition(index, compIndex){
+    fetch('/play', {
+      method: 'POST', 
+      cache: 'no-cache',
+      body: JSON.stringify({playlist_index: index, music_index: compIndex})
+    }).then((response) => response.json()).then((data) => {
+      this.setData(data);
+      this.props.updater();
+    });
+  }
+
+  pushBack(index, compIndex){
+    fetch('/push_back', {
+      method: 'POST', 
+      cache: 'no-cache',
+      body: JSON.stringify({playlist_index: index, music_index: compIndex})
+    }).then((response) => response.json()).then((data) => {
+      this.setData(data);
+    });
+  }
+
+  pushForward(index, compIndex){
+    fetch('/push_forward', {
+      method: 'POST', 
+      cache: 'no-cache',
+      body: JSON.stringify({playlist_index: index, music_index: compIndex})
+    }).then((response) => response.json()).then((data) => {
+      this.setData(data);
+    });
+  }
+
+  removeComposition(index, compIndex){
+    fetch('/remove_composition', {
+      method: 'POST', 
+      cache: 'no-cache',
+      body: JSON.stringify({playlist_index: index, music_index: compIndex})
+    }).then((response) => response.json()).then((data) => {
+      this.setData(data);
+      this.props.updater();
+    });
+  }
+
+  openDialog(){
+    let name = prompt("Введите название плейлиста");
+    if(name == undefined || name == '')
+      return;
+    fetch('/create_playlist', {
+      method: 'POST',
+      cache: 'no-cache',
+      body: JSON.stringify({name: name})
+    }).then((response) => response.json()).then((data) => {
+      this.setData(data);
+    });
+  }
+
   render(){
     return (
       <div>
@@ -105,27 +223,8 @@ class PlayListList extends React.Component{
                   {data.name}
                 </Box>
                 <Box>
-                  <IconButton onClick={() => {
-                    this.worksWith = index;
-                    this.setState({
-                      ...this.state,
-                      dialogOpened: true
-                    });
-                  }}>
-                    <AddRoundedIcon/>
-                  </IconButton>
-                  <IconButton onClick={() => {
-                    fetch('/remove_playlist', {
-                      method: 'POST',
-                      cache: 'no-cache',
-                      body: JSON.stringify({index: index})
-                    }).then((response) => response.json()).then((data) => {
-                      this.setData(data);
-                      this.props.updater();
-                    });
-                  }}>
-                    <DeleteIcon/>
-                  </IconButton>
+                  <AddCompositionButton onClick={this.addComposition} index={index}></AddCompositionButton>
+                  <DeletePlaylist onClick={this.deletePlaylist} index={index}></DeletePlaylist>
                 </Box>
               </Box>
               <List sx={{width: '100%'}}>
@@ -135,85 +234,26 @@ class PlayListList extends React.Component{
                       {compName}
                     </Box>
                     <Box>
-                      <IconButton onClick={() => {
-                          fetch('/play', {
-                            method: 'POST', 
-                            cache: 'no-cache',
-                            body: JSON.stringify({playlist_index: index, music_index: compIndex})
-                          }).then((response) => response.json()).then((data) => {
-                            this.setData(data);
-                            this.props.updater();
-                          })
-                        }}>
-                        <PlayArrowRoundedIcon/>
-                      </IconButton>
-                      <IconButton onClick={() => {
-                        fetch('/push_back', {
-                          method: 'POST', 
-                          cache: 'no-cache',
-                          body: JSON.stringify({playlist_index: index, music_index: compIndex})
-                        }).then((response) => response.json()).then((data) => {
-                          this.setData(data);
-                        })
-                      }}>
-                        <ExpandMore/>
-                      </IconButton>
-                      <IconButton onClick={() => {
-                        fetch('/push_forward', {
-                          method: 'POST', 
-                          cache: 'no-cache',
-                          body: JSON.stringify({playlist_index: index, music_index: compIndex})
-                        }).then((response) => response.json()).then((data) => {
-                          this.setData(data);
-                        })
-                      }}>
-                        <ExpandLess/>
-                      </IconButton>
-                      <IconButton onClick={() => {
-                        fetch('/remove_composition', {
-                          method: 'POST', 
-                          cache: 'no-cache',
-                          body: JSON.stringify({playlist_index: index, music_index: compIndex})
-                        }).then((response) => response.json()).then((data) => {
-                          this.setData(data);
-                          this.props.updater();
-                        })
-                      }}>
-                        <DeleteIcon/>
-                      </IconButton>
+                      <PlayComposition onClick={this.playComposition} index={index} compIndex={compIndex}></PlayComposition>
+                      <PushBack onClick={this.pushBack} index={index} compIndex={compIndex}></PushBack>
+                      <PushForward onClick={this.pushForward} index={index} compIndex={compIndex}></PushForward>
+                      <RemoveComposition onClick={this.removeComposition} index={index} compIndex={compIndex}></RemoveComposition>
                     </Box>
                   </ListItem>
                 ))}
               </List>
             </ListItem>))}
           <ListItem sx={{display: 'flex', justifyContent:'center'}}>
-            <IconButton onClick={() => {
-              let name = prompt("Введите название плейлиста");
-              if(name == undefined || name == '')
-                return;
-              fetch('/create_playlist', {
-                method: 'POST',
-                cache: 'no-cache',
-                body: JSON.stringify({name: name})
-              }).then((response) => response.json()).then((data) => {
-                this.setData(data);
-              });
-            }}>
-            <ControlPointIcon />
-          </IconButton>
+            <IconButton onClick={this.openDialog}>
+              <ControlPointIcon />
+            </IconButton>
           </ListItem>
         </List>
         <Dialog open={this.state.dialogOpened}>
           <DialogTitle>Выберите композицию для добавления в плейлист</DialogTitle>
           <List>
             {this.state.music.map((name, index) => (
-              <ListItem>
-                <ListItemButton onClick={() => {
-                  this.dialogCallback(index);
-                }}>
-                  {name}
-                </ListItemButton>
-              </ListItem>
+              <AddMusicListButton name={name} index={index} dialogCallback={this.dialogCallback}></AddMusicListButton>
             ))}
           </List>
       </Dialog>
@@ -228,6 +268,9 @@ class Player extends React.Component{
     this.state = {src: "", paused: true, name: ' '};
     this.audio = React.createRef();
     this.progress = React.createRef();
+    this.onAudioEnded = this.onAudioEnded.bind(this);
+    this.goPrevious = this.goPrevious.bind(this);
+    this.goNext = this.goNext.bind(this);
   }
 
   componentDidMount(){
@@ -266,21 +309,48 @@ class Player extends React.Component{
     this.setState({...this.state, progress: this.audio.current.currentTime / duration * 100});
   }
 
+  onAudioEnded(){
+    fetch('/play_next', {
+      method: 'POST',
+      cache: 'no-cache',
+    }).then(() => {
+      this.updateSelf();
+    }).then(() => {
+      this.props.updater();
+    });
+  }
+
+  goPrevious(){
+    if(this.state.progress > 15){
+      this.audio.current.currentTime = 0;
+      this.updateProgress();
+    }
+    else{
+      fetch('/play_previous', {
+        method: 'POST',
+        cache: 'no-cache'
+      }).then(() => {
+        this.updateSelf();
+      }).then(() =>{
+        this.props.updater();
+      });
+    }
+  }
+
+  goNext(){
+    fetch('/play_next', {
+      method: 'POST',
+      cache: 'no-cache'
+    }).then(() => {
+      this.updateSelf();
+    }).then(() =>{
+      this.props.updater();
+    });
+  }
+
   render(){
     return (<div style={{position: 'fixed', top: '0', bottom: '0', right: '0', width: '64%'}}>
-      <audio ref={this.audio} src={this.state.src} type="audio/mp3" autoPlay={!this.state.paused} onEnded={() => {
-        fetch('/play_next', {
-          method: 'POST',
-          cache: 'no-cache',
-        }).then(() => {
-          this.updateSelf();
-        }).then(() => {
-          this.props.updater();
-        })
-      }}
-      onTimeUpdate={() => {
-        this.updateProgress();
-      }}>
+      <audio ref={this.audio} src={this.state.src} type="audio/mp3" autoPlay={!this.state.paused} onEnded={this.onAudioEnded} onTimeUpdate={() => {this.updateProgress();}}>
       </audio>
       <Container>
         <MusicNoteIcon color='action' sx={{
@@ -295,22 +365,7 @@ class Player extends React.Component{
       </Container>
       <Container sx={{display: 'flex', justifyContent: 'space-around', marginTop: '5vh'}}>
         <IconButton>
-          <SkipPreviousRoundedIcon sx={{width: '20vh', height: '20vh'}} onClick={() => {
-            if(this.state.progress > 15){
-              this.audio.current.currentTime = 0;
-              this.updateProgress();
-            }
-            else{
-              fetch('/play_previous', {
-                method: 'POST',
-                cache: 'no-cache'
-              }).then(() => {
-                this.updateSelf();
-              }).then(() =>{
-                this.props.updater();
-              });
-            }
-          }}/>
+          <SkipPreviousRoundedIcon sx={{width: '20vh', height: '20vh'}} onClick={this.goPrevious}/>
         </IconButton>
         <IconButton>
           {this.state.paused ? <PlayArrowRoundedIcon sx={{width: '20vh', height: '20vh'}} onClick={() => {
@@ -324,16 +379,7 @@ class Player extends React.Component{
           </PauseRoundedIcon>}
         </IconButton>
         <IconButton>
-          <SkipNextRoundedIcon sx={{width: '20vh', height: '20vh'}} onClick={() => {
-            fetch('/play_next', {
-              method: 'POST',
-              cache: 'no-cache'
-            }).then(() => {
-              this.updateSelf();
-            }).then(() =>{
-              this.props.updater();
-            });
-          }}/>
+          <SkipNextRoundedIcon sx={{width: '20vh', height: '20vh'}} onClick={this.goNext}/>
         </IconButton>
       </Container>
     </div>);
