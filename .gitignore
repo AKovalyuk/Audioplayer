@@ -1,0 +1,5 @@
+.pylintrc
+.vscode/
+__pycache__/
+venv/
+music/
