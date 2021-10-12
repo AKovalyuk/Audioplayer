@@ -1,6 +1,6 @@
 """Module with classes for cycled linked list"""
 
-from typing import Any
+from typing import Any, Iterable, Optional
 
 
 class LinkedListItem:
@@ -11,22 +11,22 @@ class LinkedListItem:
         self._previous = previous
 
     @property
-    def next_item(self):
+    def next_item(self) -> Optional['LinkedListItem']:
         """Property getter for next node"""
         return self._next
 
     @property
-    def previous_item(self):
+    def previous_item(self) -> Optional['LinkedListItem']:
         """Property getter for previous node"""
         return self._previous
 
     @next_item.setter
-    def next_item(self, new):
+    def next_item(self, new: Any) -> None:
         """Property setter for next node"""
         self._next = new
 
     @previous_item.setter
-    def previous_item(self, new):
+    def previous_item(self, new: Any) -> None:
         """Property setter for previous node"""
         self._previous = new
 
@@ -103,7 +103,7 @@ class LinkedList:
             return None
         return self.first_item.previous_item.value
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.length
 
     def __contains__(self, value: Any) -> bool:
@@ -116,13 +116,13 @@ class LinkedList:
             element = element.next_item
         return element.value == value
 
-    def __iter__(self):
+    def __iter__(self) -> 'LinkedListIterator':
         return LinkedListIterator(self)
 
-    def __reversed__(self):
+    def __reversed__(self) -> 'LinkedListReversed':
         return LinkedListReversed(self)
 
-    def __getitem__(self, index) -> Any:
+    def __getitem__(self, index: int) -> Any:
         if 0 <= index < self.length:
             element = self.first_item
             for _ in range(index):
@@ -130,14 +130,14 @@ class LinkedList:
             return element.value
         raise IndexError
 
-    def __setitem__(self, index, value):
+    def __setitem__(self, index: int, value: Any) -> None:
         if 0 <= index < self.length:
             element = self.first_item
             for _ in range(index):
                 element = element.next_item
             element.value = value
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Iterable) -> bool:
         if self.length != len(other):
             return False
         for first, second in zip(self, other):
@@ -150,7 +150,7 @@ class LinkedList:
 
     __repr__ = __str__
 
-    def remove_by_index(self, index):
+    def remove_by_index(self, index: int) -> None:
         """Method removes item by index"""
         element = self.first_item
         for _ in range(index):
@@ -185,7 +185,7 @@ class LinkedListReversed:
     def __init__(self, linked_list) -> None:
         self.linked_list = linked_list
 
-    def __iter__(self):
+    def __iter__(self) -> 'LinkedListReversedIterator':
         return LinkedListReversedIterator(self.linked_list)
 
 

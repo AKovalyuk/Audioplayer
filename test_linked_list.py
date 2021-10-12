@@ -1,6 +1,6 @@
 """Tests for linked list"""
 
-from linked_list import LinkedList
+from linked_list import *
 from pytest import mark, raises
 
 def create_list(iterable):
