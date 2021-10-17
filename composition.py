@@ -5,7 +5,13 @@ from linked_list import LinkedList
 
 class Composition:
     """Class represents music composition"""
-    def __init__(self, name) -> None:
+    def __init__(self, name: str) -> None:
+        """
+        Constructor for composition class
+        :param name: name of composition
+        """
+        if not isinstance(name, str):
+            raise TypeError
         self.__name = name
 
     def play(self) -> str:
@@ -21,17 +27,27 @@ class Composition:
 class PlayList:
     """Playlist contains compositions"""
     def __init__(self, name: str) -> None:
+        """
+        Constructor for playlist
+        :param name: name of playlist
+        """
         self.container = LinkedList()
         self.name = name
         self.current_composition = None
         self.current_index = -1
 
     def append(self, composition: Composition) -> None:
-        """Add composition in playlist"""
+        """
+        Add composition in playlist
+        :param composition: composition, added in playlist
+        """
         self.container.append(composition)
 
     def remove(self, index: int) -> None:
-        """Remove composition from playlist"""
+        """
+        Remove composition from playlist
+        :param index: index of removed composition
+        """
         if 0 <= index < len(self.container):
             if index == self.current_index:
                 self.current_index = -1
@@ -39,7 +55,10 @@ class PlayList:
             self.container.remove_by_index(index)
 
     def push_forward(self, index: int) -> None:
-        """Push composition forwards"""
+        """
+        Push composition forwards
+        :param index: index of pushed composition
+        """
         if 0 <= index < len(self.container):
             new_index = (index - 1) % self.container.length
             if len(self.container) != 1:
@@ -50,7 +69,10 @@ class PlayList:
                 self.current_index = index
 
     def push_back(self, index: int) -> None:
-        """Push composition backwards"""
+        """
+        Push composition backwards
+        :param index: index of pushed composition
+        """
         if 0 <= index < len(self.container):
             new_index = (index + 1) % self.container.length
             if len(self.container) != 1:
@@ -89,7 +111,10 @@ class PlayList:
         }
 
     def play(self, index: int) -> None:
-        """Return current composition"""
+        """
+        Set current composition by index
+        :param index: composition index
+        """
         element = self.container.first_item
         for _ in range(index):
             element = element.next_item

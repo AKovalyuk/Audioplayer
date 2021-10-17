@@ -5,8 +5,8 @@ from os import listdir
 from sys import stderr
 from flask.helpers import send_file
 from flask.json import jsonify
-from composition import Composition, PlayList
 from flask import Flask, request, make_response
+from composition import Composition, PlayList
 
 app = Flask(__name__, static_folder='./frontend/build/static')
 
@@ -27,9 +27,9 @@ def music_data():
         return make_response(jsonify({
             'state': 'none'
         }), 200)
-    file = open(f'./music/{playlist_list[current_playlist].current_composition.play()}.mp3', mode='rb')
-    b64code = 'data:audio/mp3;base64,' + b64encode(file.read()).decode('ascii')
-    file.close()
+    with open(f'./music/{playlist_list[current_playlist].current_composition.play()}.mp3', mode='rb') as file:
+        b64code = 'data:audio/mp3;base64,' + b64encode(file.read()).decode('ascii')
+        file.close()
     return make_response(jsonify({
         'state': 'ok',
         'data': b64code,
