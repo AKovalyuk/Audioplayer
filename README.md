@@ -6,8 +6,11 @@ In terminal:
 1. `python -m venv venv` - create virtual environment for project  
 2. Run `Activate` script in `./venv/Scripts`
 3. `pip install -r requirements.txt`
+4. `cd frontend`
+5. `npm install`
+6. `npm run-script build`
 ## Usage
-* Add mp3 files in `music` folder
+* Create `music` directory in root project directory and add mp3 files in it
 * Run server script `python app.py`
 * Open link in browser
 * Create playlist and add music in them:  
